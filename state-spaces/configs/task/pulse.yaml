@@ -1,0 +1,8 @@
+# _target_: tasks.tasks.BaseTask
+_name_: pulse
+loss: pulse
+metrics: pulse
+sample_time: 0.7
+pre_sample_time: 0.3
+sample_rate: 2000
+torchmetrics: null

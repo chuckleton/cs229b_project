@@ -1,0 +1,26 @@
+defaults:
+  - config
+
+
+experiment_path: null                      # Path to state-spaces experiment folder
+# checkpoint_path: outputs/2023-12-01/17-59-12-752385/checkpoints/last.ckpt # Relative path to checkpoint in state-spaces experiment folder. Uses checkpoints/val/loss.ckpt by default.
+# checkpoint_path: outputs/2023-12-01/18-11-01-605231/checkpoints/last.ckpt # Relative path to checkpoint in state-spaces experiment folder. Uses checkpoints/val/loss.ckpt by default.
+# checkpoint_path: outputs/2023-12-01/19-00-22-664226/checkpoints/last.ckpt # Relative path to checkpoint in state-spaces experiment folder. Uses checkpoints/val/loss.ckpt by default.
+# checkpoint_path: outputs/2023-12-01/20-21-42-857092/checkpoints/last.ckpt # Relative path to checkpoint in state-spaces experiment folder. Uses checkpoints/val/loss.ckpt by default.
+# checkpoint_path: outputs/2023-12-02/20-28-12-870707/checkpoints/last.ckpt # Relative path to checkpoint in state-spaces experiment folder. Uses checkpoints/val/loss.ckpt by default.
+# checkpoint_path: outputs/2023-12-03/fine_tune_layer_23/checkpoints/val/loss.ckpt
+# checkpoint_path: outputs/2023-12-02/full_train_qual/checkpoints/val/loss.ckpt
+checkpoint_path: outputs/2023-12-04/mse_error/checkpoints/val/loss.ckpt
+
+l_sample: 4999                            # Sample length
+n_samples: 50                              # Total number of distinct conditioning samples drawn from dataset
+n_batch: null                                # Batch size during generation. Setting to None maximizes batch size (equal to n_samples)
+n_reps: 1                                  # Number of times to replicate each sample
+l_prefix: 4999                                # Prefix length: num steps to use for conditioning
+top_p: 1.                                  # Nucleus sampling
+temp: 1.                                   # Temperature
+split: val                                 # If conditioning, which split of the data to use ['val' | 'test']
+save_dir: pulse/samples                  # Save directory. Pass in 'null' (None) to save in Hydra directory to ensure that samples are not overridden
+load_data: true                            # Load the dataset (set to false to disable if not conditioning)
+decode: none                              # Decoding mode ['audio' | 'text' | None]. The pretrained WikiText-103 model currently does not generate correctly
+test_model: false                     # Test that stepping and forward match before generating

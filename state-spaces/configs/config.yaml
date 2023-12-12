@@ -1,0 +1,107 @@
+# @package _global_
+defaults:
+  - _self_
+  - experiment: base # Specifies model and pipeline, equivalent to next two lines
+  # - model: s4 # Model backbone
+  # - pipeline: cifar # Specifies collection of configs, equivalent to next 5 lines
+  # Pipelines should specify /loader, /dataset, /task, /encoder, /decoder (ideally in that order)
+  # # - loader: default # Dataloader (e.g. handles batches)
+  # # - dataset: cifar # Defines the data (x and y pairs)
+  # # - task: multiclass_classification # Defines loss and metrics
+  # # - encoder: null # Interface between data and model
+  # # - decoder: null # Interface between model and targets
+  - callbacks: # Extra pytorch-lightning features
+    - base
+    - checkpoint
+    - rich # RichProgressBar and RichModelSummary
+
+# Additional arguments used to configure the training loop
+# Most of these set combinations of options in the PL trainer, add callbacks, or add features to the optimizer
+train:
+  seed: 0
+  name: null # optional name for the run to make logging easier
+  # These three options are used by callbacks (checkpoint, monitor) and scheduler
+  # Most of them are task dependent and are set by the pipeline
+  interval: ??? # Should be specified by scheduler. Also used by LR monitor
+  monitor: ??? # Should be specified by pipeline. Used by scheduler (plateau) and checkpointer
+  mode: ??? # Should be specified by pipeline. Used by scheduler (plateau) and checkpointer
+  ema: 0.0 # Moving average model for validation # TODO move into callback
+  test: False # Test after training
+  debug: False # Special settings to make debugging more convenient
+  ignore_warnings: False # Disable python warnings
+
+  # These control state passing between batches
+  state:
+    mode: null # [ None | 'none' | 'reset' | 'bptt' | 'tbptt' ]
+    n_context: 0 # How many steps to use as memory context. Must be >= 0 or None (null), meaning infinite context
+    n_context_eval: ${.n_context} # Context at evaluation time
+  # Convenience keys to allow grouping runs
+
+  ckpt: null # Resume training
+
+  optimizer_param_grouping:
+    bias_weight_decay: False
+    normalization_weight_decay: False
+
+  disable_dataset: False # Disable dataset loading
+  validate_at_start: false # Run validation before training
+
+  # fine tuning losses
+  # original: 2.959365129470825 (0 params)
+  # full: 2.0406463146209717 (69.1k params)
+  # encoder: 2.055708646774292 (256 params)
+  # layer 0: 2.021030902862549 (17.1k params)
+  # layer 1: 1.991052508354187 (17.1k params)
+  # layer 2: 1.977023959159851 (17.1k params)
+  # layer 3: 2.0126757621765137 (17.1k params)
+  # decoder: 2.5126309394836426 (65 params)
+  # encoder & layer 0: 2.0131919384002686 (17.4k params)
+  # layer 0 & layer 1: 2.0118813514709473 (34.2k params)
+  # layer 1 & layer 2: 1.9950075149536133 (34.2k params)
+  # layer 2 & layer 3: 1.9555740356445312 (34.2k params)
+  # layer 3 & decoder: 2.0208382606506348 (17.2k params)
+   # encoder & decoder: 2.065573215484619 (321 params)
+
+  pretrained_model_path: null # Path to pretrained model
+  # pretrained_model_path: /root/test_data_management/cs229b/state-spaces/outputs/2023-12-02/full_train_qual/checkpoints/last.ckpt # Path to pretrained model
+  # pretrained_model_path: /root/test_data_management/cs229b/state-spaces/outputs/2023-12-03/fine_tune_layer_3_decoder/checkpoints/val/loss.ckpt # Path to pretrained model
+  # freeze_pretrained_layers: [model.layers.0, model.layers.1, model.layers.2, encoder] # List of layers to ignore when loading pretrained model
+  freeze_pretrained_layers: []
+  pretrained_model_strict_load: true # Whether to load the pretrained model even if the model is not compatible
+  pretrained_model_state_hook: # Hook called on the loaded model's state_dict
+    _name_: null
+  post_init_hook: # After initializing model, call method on model
+    _name_: null
+
+  layer_decay: # Used for ImageNet finetuning
+    _name_: null
+    decay: 0.7
+
+  # PL 2.0 seems to have gotten rid of the trainer.track_grad_norm flag
+  # We have a custom Callback (TrackNorms) that implements something similar
+  track_grad_norms: False
+
+tolerance: # fault tolerance for training on preemptible machines
+  logdir: ./resume
+  id: null # must be set to resume training on preemption
+
+# We primarily use wandb so this is moved to top level in the config for convenience
+# Set `~wandb` or `wandb=null` or `wandb.mode=disabled` to disable logging
+# If other loggers are added, it would make sense to put this one level lower under train/ or logger/
+wandb:
+  project: hippo
+  group: ""
+  job_type: training
+  mode: online # choices=['online', 'offline', 'disabled']
+  save_dir: "."
+  id: null # pass correct id to resume experiment!
+  # Below options should not need to be specified
+  # entity: ""  # set to name of your wandb team or just remove it
+  # log_model: False
+  # prefix: ""
+  # job_type: "train"
+  # tags: []
+
+hydra:
+  run:
+    dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S-%f}
